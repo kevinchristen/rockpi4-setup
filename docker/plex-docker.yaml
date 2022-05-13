@@ -1,0 +1,18 @@
+version: '3.7'
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    network_mode: host
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VERSION=docker
+      # Safe. Only good for 4 minutes, and for one initial authentication
+      #  from the Plex server to the Service.
+      - PLEX_CLAIM=claim-_rG223_BqEkMyHmwpVJ-
+    volumes:
+      - /var/lib/plex:/config
+      - /tmp/transcode:/transcode
+      - /mnt/Family/Music:/data
+    restart: unless-stopped

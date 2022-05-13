@@ -1,0 +1,82 @@
+#+TITLE: Setting up my Rock Pi 4B
+#+AUTHOR: Kevin Christen
+* Introduction
+This file contains notes taken while setting up my Rock Pi 4B with Ubuntu
+Server. The goal is for the Rock Pi to be a NAS server with Samba, and a
+media server with Plex. These services are run in Docker containers.
+* Set up serial console
+** Cable
+As described [[https://wiki.radxa.com/Rockpi4/dev/serial-console][here]], the Rock Pi has a very high (1.5M baud) baud rate that
+is not handled well by many USB to UART bridges. In particular, the
+/ADAFRUIT Industries 954 USB-to-TTL Serial Cable/ contains the SiLabs
+CP2012 chipset, which is only rated to 1M baud. It produces a mix of
+gibberish and correct output on the screen, but the keyboard input works
+fine.
+** Commands
+Run these on the system you will be connecting from, obviously.
+1. ~brew install lsusb~
+2. ~lsusb~
+3. Plug in adapter and check for device 
+   #+BEGIN_EXAMPLE
+   $ ll /dev/tty.usbserial-0001
+   crw-rw-rw-  1 root  wheel  0x9000004 May 10 13:54 /dev/tty.usbserial-0001
+   #+END_EXAMPLE
+4. ~screen /dev/tty.usbserial-0001 1500000,cs8,-ixon~
+5. Or use CoolTerm
+* WiFi
+Turn on wifi manually: ~sudo nmcli d wifi connect Fitzgerald password ***~. Configure WiFi by creating file /etc/network/interfaces.d/wlan0:
+#+BEGIN_EXAMPLE
+auto wlan0
+iface wlan0 inet dhcp
+wpa-essid Fitzgerald
+wpa-psk ***
+#+END_EXAMPLE
+Turn off MAC randomization, which causes unstable connections:
+#+BEGIN_EXAMPLE
+$ cat /etc/NetworkManager/conf.d/disable-random-mac.conf
+[device]
+wifi.scan-rand-mac-address=no
+#+END_EXAMPLE
+* Flash OS to eMMC
+The eMMC is //dev/mmcblk2/.
+1. Download and decompress image, then install it:
+  
+   ~sudo dd if=rockpi-4b-ubuntu-focal-server-arm64-20220506-0241-gpt.img of=/dev/mmcblk2 bs=16M~
+2. ~mkdir /tmp/mnt~
+3. ~sudo mount /dev/mmcblk2p5 /tmp/mnt~
+4. ~ls /tmp/mnt~
+
+   You should see a root filesystem
+5. Power down, remove uSD card, and power up
+6. ~sudo apt update && sudo apt upgrade~
+7. Reboot again
+* Install NVMe SSD
+1. ~sudo apt install nvme-cli~
+2. Find device:
+   #+BEGIN_EXAMPLE
+   $ sudo nvme list
+   Node             SN                   Model                                    Namespace Usage                      Format           FW Rev
+   ---------------- -------------------- ---------------------------------------- --------- -------------------------- ---------------- --------
+   /dev/nvme0n1     215022801330         WD_BLACK  SN750 2TB                      1           2.00  TB /   2.00  TB    512   B +  0 B   112000WD
+   #+END_EXAMPLE
+3. Create physical volume: ~sudo pvcreate /dev/nvme0n1~
+4. Create volume group: ~sudo vgcreate rockpi /dev/nvme0n1~
+5. Create logical volume: ~sudo lvcreate -L 750G -n TimeMachine rockpi~
+6. Create filesystem: ~sudo mkfs.ext4 /dev/rockpi/TimeMachine~
+7. Enable weekly TRIM
+   #+BEGIN_EXAMPLE
+   sudo systemctl enable fstrim.timer
+   sudo systemctl start fstrim.timer
+   #+END_EXAMPLE
+8. Add to fstab and mount
+   #+BEGIN_EXAMPLE
+   /dev/rockpi/TimeMachine /mnt/TimeMachine ext4 noatime 0 2
+   #+END_EXAMPLE
+* Install and start services
+Install docker and docker-compose, then start each of the services:
+
+  + ~sudo docker-compose -f plex-docker.yaml up --detach~
+  + ~sudo docker-compose -f portainer-docker.yaml up --detach~
+  + ~sudo docker-compose -f samba-docker.yaml -f samba-docker-override.yaml up --detach~
+
+To shut them down, replace /up --detach/ with /down/.
