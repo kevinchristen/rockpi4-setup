@@ -12,7 +12,7 @@ function finish {
 }
 trap finish EXIT
 
-if ! /usr/bin/mount | grep ${dest}; then
+if ! /usr/bin/findmnt ${dest}; then
     echo mounting
     sudo /usr/bin/mount ${dest}
 fi
@@ -34,5 +34,3 @@ for backup in $(/usr/bin/borg list ${dest} | cut --fields=1 --delimiter=' '); do
         /usr/bin/borg delete
     fi
 done
-
-

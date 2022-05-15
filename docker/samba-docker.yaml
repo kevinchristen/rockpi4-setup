@@ -32,9 +32,9 @@ services:
       # [writelist] default: 'none' or list of users that can write to read-only share;
       # [comment] default: 'none' or description of share
       # SHARE: "sharename;/mnt;yes;no;no;yourname;'none';'none';'Homeserver"
-      SHARE: "TimeMachine;/mnt/TimeMachine;;no;;;none;;Time machine share on Rock Pi"
-      SHARE2: "Family;/mnt/Family;;no;;;none;;Family share on Rock Pi"
-      SHARE3: "SonosMp3s;/mnt/Family/Music/mp3;;no;;;none;;MP3s for the Sonos"
+      SHARE: "TimeMachine;/mnt/TimeMachine;;no;no;;none;;Time machine share on Rock Pi"
+      SHARE2: "Family;/mnt/Family;;no;no;;none;;Family share on Rock Pi"
+      SHARE3: "SonosMp3s;/mnt/Family/Music/mp3;;yes;;;none;;MP3s for the Sonos"
 
       # workgroup/domain name for share default: "MYGROUP"
       WORKGROUP: "Homeserver"
@@ -70,4 +70,3 @@ services:
     volumes:
       - /mnt/TimeMachine:/mnt/TimeMachine
       - /mnt/Family:/mnt/Family
-
