@@ -24,7 +24,8 @@ Run these on the system you will be connecting from, obviously.
 4. ~screen /dev/tty.usbserial-0001 1500000,cs8,-ixon~
 5. Or use CoolTerm
 * WiFi
-Turn on wifi manually: ~sudo nmcli d wifi connect Fitzgerald password ***~. Configure WiFi by creating file /etc/network/interfaces.d/wlan0:
+Turn on wifi manually: ~sudo nmcli d wifi connect Fitzgerald password
+***~. Configure WiFi by creating file /etc/network/interfaces.d/wlan0: 
 #+BEGIN_EXAMPLE
 auto wlan0
 iface wlan0 inet dhcp
@@ -50,6 +51,7 @@ The eMMC is //dev/mmcblk2/.
 5. Power down, remove uSD card, and power up
 6. ~sudo apt update && sudo apt upgrade~
 7. Reboot again
+8. Change the /rock/ password
 * Install NVMe SSD
 1. ~sudo apt install nvme-cli~
 2. Find device:
@@ -72,6 +74,11 @@ The eMMC is //dev/mmcblk2/.
    #+BEGIN_EXAMPLE
    /dev/rockpi/TimeMachine /mnt/TimeMachine ext4 noatime 0 2
    #+END_EXAMPLE
+* Turn on syslogd
+Not sure why this isn't automatic.
+  + ~sudo apt install inetutils-syslogd~
+  + ~sudo systemctl start inetutils-syslogd~
+  + ~sudo systemctl enable inetutils-syslogd~
 * Install and start services
 Install docker and docker-compose, then start each of the services:
 
@@ -80,3 +87,37 @@ Install docker and docker-compose, then start each of the services:
   + ~sudo docker-compose -f samba-docker.yaml -f samba-docker-override.yaml up --detach~
 
 To shut them down, replace /up --detach/ with /down/.
+* Backups to S3
+  + Install s3fs, borgbackup, and cron
+  + ~sudo systemctl enable cron~
+  + Create bucket (/18c99540-161d-4396-a54d-9824a659024d/ in this case)
+  + Create IAM user with this policy:
+    #+BEGIN_EXAMPLE
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "S3BackupPolicy",
+                "Effect": "Allow",
+                "Action": [
+                    "s3:DeleteObject",
+                    "s3:GetObject",
+                    "s3:ListBucket",
+                    "s3:PutObject"
+                ],
+                "Resource": [
+                    "arn:aws:s3:::18c99540-161d-4396-a54d-9824a659024d",
+                    "arn:aws:s3:::18c99540-161d-4396-a54d-9824a659024d/*"
+                ]
+            }
+        ]
+    }
+    #+END_EXAMPLE
+  + Add user's credentials to /\slash{}root​\slash{}.aws​\slash{}credentials/
+    with the profile name /backup/
+  + Create mount point
+  + Add this to /​/etc\slash{}/fstab/:
+    #+BEGIN_EXAMPLE
+    18c99540-161d-4396-a54d-9824a659024d /mnt/18c99540-161d-4396-a54d-9824a659024d fuse.s3fs noauto,rw,allow_other,umask=0007,uid=1001,gid=1001,endpoint=us-west-2,url=https://s3-us-west-2.amazonaws.com,profile=backup 0 2
+    #+END_EXAMPLE
+  + run [[file:bin/backup.sh][bin/backup.sh]] from a cron job ([[file:bin/crontab][example crontab]])

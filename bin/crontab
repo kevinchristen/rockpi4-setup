@@ -1,0 +1,1 @@
+@midnight $HOME/bin/backup.sh >> /tmp/backup-${LOGNAME}.log 2>&1
