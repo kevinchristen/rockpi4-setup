@@ -42,7 +42,8 @@ $ cat /etc/NetworkManager/conf.d/disable-random-mac.conf
 wifi.scan-rand-mac-address=no
 #+END_EXAMPLE
 * Flash OS to eMMC
-The eMMC is //dev/mmcblk2/.
+The eMMC is /\slash{}\slash{}dev\slash{}mmcblk2/. The root filesystem is
+partition 5, which is /\slash{}\slash{}dev\slash{}mmcblk2p5/.
 1. Download and decompress image, then install it:
   
    ~sudo dd if=rockpi-4b-ubuntu-focal-server-arm64-20220506-0241-gpt.img of=/dev/mmcblk2 bs=16M~
