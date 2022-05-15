@@ -14,6 +14,11 @@ serial console working correctly with either of these cables:
 + The /DSD TECH SH-U09G USB to TTL Serial Cable/ with the /FTDI FT232RL/
   chip. I haven't been able to get this one working at all.
 
+Note that the color coding is different between these cables:
+
++ Adafruit: black GND, white TXD, green RXD
++ DSD: black GND, blue TXD, white RXD
+
 I have tried both ~screen~ (command below) and CoolTerm. Both somewhat work
 with the ADAFruit cable.
 ** Commands
