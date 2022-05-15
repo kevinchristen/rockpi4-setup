@@ -5,13 +5,17 @@ This file contains notes taken while setting up my Rock Pi 4B with Ubuntu
 Server. The goal is for the Rock Pi to be a NAS server with Samba, and a
 media server with Plex. These services are run in Docker containers.
 * Set up serial console
-** Cable
-As described [[https://wiki.radxa.com/Rockpi4/dev/serial-console][here]], the Rock Pi has a very high (1.5M baud) baud rate that
-is not handled well by many USB to UART bridges. In particular, the
-/ADAFRUIT Industries 954 USB-to-TTL Serial Cable/ contains the SiLabs
-CP2012 chipset, which is only rated to 1M baud. It produces a mix of
-gibberish and correct output on the screen, but the keyboard input works
-fine.
+I have followed the documentation [[https://wiki.radxa.com/Rockpi4/dev/serial-console][here]], but have not been able to get the
+serial console working correctly with either of these cables:
++ The /ADAFRUIT Industries 954 USB-to-TTL Serial Cable/ with the /SiLabs
+  CP2012/ chip. It is only rated to 1M baud, whereas the console is
+  allegedly 1.5M baud. It produces a mix of gibberish and correct screen
+  output but the keyboard input works fine, so you can get some work done.
++ The /DSD TECH SH-U09G USB to TTL Serial Cable/ with the /FTDI FT232RL/
+  chip. I haven't been able to get this one working at all.
+
+I have tried both ~screen~ (command below) and CoolTerm. Both somewhat work
+with the ADAFruit cable.
 ** Commands
 Run these on the system you will be connecting from, obviously.
 1. ~brew install lsusb~
@@ -22,7 +26,6 @@ Run these on the system you will be connecting from, obviously.
    crw-rw-rw-  1 root  wheel  0x9000004 May 10 13:54 /dev/tty.usbserial-0001
    #+END_EXAMPLE
 4. ~screen /dev/tty.usbserial-0001 1500000,cs8,-ixon~
-5. Or use CoolTerm
 * WiFi
 Turn on wifi manually: ~sudo nmcli d wifi connect Fitzgerald password
 ***~. Configure WiFi by creating file /etc/network/interfaces.d/wlan0: 
@@ -88,36 +91,36 @@ Install docker and docker-compose, then start each of the services:
 
 To shut them down, replace /up --detach/ with /down/.
 * Backups to S3
-  + Install s3fs, borgbackup, and cron
-  + ~sudo systemctl enable cron~
-  + Create bucket (/18c99540-161d-4396-a54d-9824a659024d/ in this case)
-  + Create IAM user with this policy:
-    #+BEGIN_EXAMPLE
-    {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Sid": "S3BackupPolicy",
-                "Effect": "Allow",
-                "Action": [
-                    "s3:DeleteObject",
-                    "s3:GetObject",
-                    "s3:ListBucket",
-                    "s3:PutObject"
-                ],
-                "Resource": [
-                    "arn:aws:s3:::18c99540-161d-4396-a54d-9824a659024d",
-                    "arn:aws:s3:::18c99540-161d-4396-a54d-9824a659024d/*"
-                ]
-            }
-        ]
-    }
-    #+END_EXAMPLE
-  + Add user's credentials to /\slash{}root​\slash{}.aws​\slash{}credentials/
-    with the profile name /backup/
-  + Create mount point
-  + Add this to /​/etc\slash{}/fstab/:
-    #+BEGIN_EXAMPLE
-    18c99540-161d-4396-a54d-9824a659024d /mnt/18c99540-161d-4396-a54d-9824a659024d fuse.s3fs noauto,rw,allow_other,umask=0007,uid=1001,gid=1001,endpoint=us-west-2,url=https://s3-us-west-2.amazonaws.com,profile=backup 0 2
-    #+END_EXAMPLE
-  + run [[file:bin/backup.sh][bin/backup.sh]] from a cron job ([[file:bin/crontab][example crontab]])
+1. Install s3fs, borgbackup, and cron
+2. ~sudo systemctl enable cron~
+3. Create bucket (/18c99540-161d-4396-a54d-9824a659024d/ in this case)
+4. Create IAM user with this policy:
+   #+BEGIN_EXAMPLE
+   {
+       "Version": "2012-10-17",
+       "Statement": [
+           {
+               "Sid": "S3BackupPolicy",
+               "Effect": "Allow",
+               "Action": [
+                   "s3:DeleteObject",
+                   "s3:GetObject",
+                   "s3:ListBucket",
+                   "s3:PutObject"
+               ],
+               "Resource": [
+                   "arn:aws:s3:::18c99540-161d-4396-a54d-9824a659024d",
+                   "arn:aws:s3:::18c99540-161d-4396-a54d-9824a659024d/*"
+               ]
+           }
+       ]
+   }
+   #+END_EXAMPLE
+5. Add user's credentials to /\slash{}root​\slash{}.aws​\slash{}credentials/
+   with the profile name /backup/
+6. Create mount point
+7. Add this to /​/etc\slash{}/fstab/:
+   #+BEGIN_EXAMPLE
+   18c99540-161d-4396-a54d-9824a659024d /mnt/18c99540-161d-4396-a54d-9824a659024d fuse.s3fs noauto,rw,allow_other,umask=0007,uid=1001,gid=1001,endpoint=us-west-2,url=https://s3-us-west-2.amazonaws.com,profile=backup 0 2
+   #+END_EXAMPLE
+8. run [[file:bin/backup.sh][bin/backup.sh]] from a cron job ([[file:bin/crontab][example crontab]])
