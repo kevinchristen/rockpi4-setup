@@ -119,7 +119,7 @@ To shut them down, replace /up --detach/ with /down/.
 5. Add user's credentials to /\slash{}root​\slash{}.aws​\slash{}credentials/
    with the profile name /backup/
 6. Create mount point
-7. Add this to /​/etc\slash{}/fstab/:
+7. Add this to /​/etc\slash{}fstab/:
    #+BEGIN_EXAMPLE
    18c99540-161d-4396-a54d-9824a659024d /mnt/18c99540-161d-4396-a54d-9824a659024d fuse.s3fs noauto,rw,allow_other,umask=0007,uid=1001,gid=1001,endpoint=us-west-2,url=https://s3-us-west-2.amazonaws.com,profile=backup 0 2
    #+END_EXAMPLE
