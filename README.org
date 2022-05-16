@@ -25,7 +25,7 @@ with the ADAFruit cable.
 Run these on the system you will be connecting from, obviously.
 1. ~brew install lsusb~
 2. ~lsusb~
-3. Plug in adapter and check for device 
+3. Plug in adapter and check for device
    #+BEGIN_EXAMPLE
    $ ll /dev/tty.usbserial-0001
    crw-rw-rw-  1 root  wheel  0x9000004 May 10 13:54 /dev/tty.usbserial-0001
@@ -33,12 +33,12 @@ Run these on the system you will be connecting from, obviously.
 4. ~screen /dev/tty.usbserial-0001 1500000,cs8,-ixon~
 * WiFi
 Turn on wifi manually: ~sudo nmcli d wifi connect Fitzgerald password
-***~. Configure WiFi by creating file /etc/network/interfaces.d/wlan0: 
+***~. Configure WiFi by creating file /etc/network/interfaces.d/wlan0:
 #+BEGIN_EXAMPLE
 auto wlan0
 iface wlan0 inet dhcp
-wpa-essid Fitzgerald
-wpa-psk ***
+wpa-essid <SSID>
+wpa-psk <SSID password>
 #+END_EXAMPLE
 Turn off MAC randomization, which causes unstable connections:
 #+BEGIN_EXAMPLE
@@ -50,7 +50,7 @@ wifi.scan-rand-mac-address=no
 The eMMC is /\slash{}\slash{}dev\slash{}mmcblk2/. The root filesystem is
 partition 5, which is /\slash{}\slash{}dev\slash{}mmcblk2p5/.
 1. Download and decompress image, then install it:
-  
+
    ~sudo dd if=rockpi-4b-ubuntu-focal-server-arm64-20220506-0241-gpt.img of=/dev/mmcblk2 bs=16M~
 2. ~mkdir /tmp/mnt~
 3. ~sudo mount /dev/mmcblk2p5 /tmp/mnt~
@@ -85,15 +85,19 @@ partition 5, which is /\slash{}\slash{}dev\slash{}mmcblk2p5/.
    #+END_EXAMPLE
 * Turn on syslogd
 Not sure why this isn't automatic.
-  + ~sudo apt install inetutils-syslogd~
-  + ~sudo systemctl start inetutils-syslogd~
-  + ~sudo systemctl enable inetutils-syslogd~
+1. ~sudo apt install inetutils-syslogd~
+2. ~sudo systemctl start inetutils-syslogd~
+3. ~sudo systemctl enable inetutils-syslogd~
 * Install and start services
 Install docker and docker-compose, then start each of the services:
 
   + ~sudo docker-compose -f plex-docker.yaml up --detach~
   + ~sudo docker-compose -f portainer-docker.yaml up --detach~
   + ~sudo docker-compose -f samba-docker.yaml -f samba-docker-override.yaml up --detach~
+
+    /samba-docker-override.yaml/ contains user names and passwords,
+    and isn't included in this repo. The other docker compose files
+    are.
 
 To shut them down, replace /up --detach/ with /down/.
 * Backups to S3
@@ -122,11 +126,12 @@ To shut them down, replace /up --detach/ with /down/.
        ]
    }
    #+END_EXAMPLE
-5. Add user's credentials to /\slash{}root​\slash{}.aws​\slash{}credentials/
-   with the profile name /backup/
+5. Add the IAM user's credentials to
+   /\slash{}root​\slash{}.aws​\slash{}credentials/ with the profile name
+   /backup/.
 6. Create mount point
 7. Add this to /​/etc\slash{}fstab/:
    #+BEGIN_EXAMPLE
    18c99540-161d-4396-a54d-9824a659024d /mnt/18c99540-161d-4396-a54d-9824a659024d fuse.s3fs noauto,rw,allow_other,umask=0007,uid=1001,gid=1001,endpoint=us-west-2,url=https://s3-us-west-2.amazonaws.com,profile=backup 0 2
    #+END_EXAMPLE
-8. run [[file:bin/backup.sh][bin/backup.sh]] from a cron job ([[file:bin/crontab][example crontab]])
+8. Run [[file:bin/backup.sh][bin/backup.sh]] from a cron job ([[file:bin/crontab][example crontab]]).

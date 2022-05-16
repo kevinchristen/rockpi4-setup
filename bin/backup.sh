@@ -31,6 +31,6 @@ for backup in $(/usr/bin/borg list ${dest} | cut --fields=1 --delimiter=' '); do
     if [[ -n ${backup} && -n ${oldest_backup_to_keep} \
               && ${backup} < ${oldest_backup_to_keep} ]]; then
         echo deleting $backup
-        /usr/bin/borg delete
+        /usr/bin/borg delete ${dest}::${backup}
     fi
 done
