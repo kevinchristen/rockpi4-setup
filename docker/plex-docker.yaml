@@ -14,5 +14,6 @@ services:
     volumes:
       - /var/lib/plex:/config
       - /tmp/transcode:/transcode
+      - /etc/letsencrypt:/etc/letsencrypt
       - /mnt/Family/Music:/data
     restart: unless-stopped

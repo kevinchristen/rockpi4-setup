@@ -1,1 +1,2 @@
 @midnight $HOME/bin/backup.sh >> /tmp/backup-${LOGNAME}.log 2>&1
+@weekly $HOME/bin/plex-cert.sh renew >> /tmp/plex-cert-renew.log 2>&1

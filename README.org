@@ -100,6 +100,29 @@ Install docker and docker-compose, then start each of the services:
     are.
 
 To shut them down, replace /up --detach/ with /down/.
+* Install x509 cert for Plex
+1. Get a dynamic domain name from some provider (duckdns.org in this
+   example).
+2. Configure router to keep it up to date, and to do port forwarding
+   for Plex:
+   + router:443 -> rock:32400 (necessary for places like work, that
+     block high outbound ports)
+   + router:32400 -> rock:32400
+3. Install /certbot/ for managing /Let's Encrypt/ cert.
+   #+BEGIN_EXAMPLE
+   sudo apt install snapd
+   sudo snap install core
+   sudo snap refresh core
+   sudo snap install --classic certbot
+   sudo ln -s /snap/bin/certbot /usr/bin/certbot
+   sudo snap install --candidate certbot-dns-duckdns
+   sudo snap set certbot trust-plugin-with-root=ok
+   sudo snap connect certbot:plugin certbot-dns-duckdns
+   #+END_EXAMPLE
+4. Create the certificate by running
+   [[file:bin/plex-cert.sh][~bin/plex-cert.sh init~]]
+5. Configure Plex to use the certificate through the web UI.
+6. Renew certificate from a cron job ([[file:bin/crontab][example crontab]]).
 * Backups to S3
 1. Install s3fs, borgbackup, and cron
 2. ~sudo systemctl enable cron~
