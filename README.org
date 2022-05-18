@@ -32,8 +32,9 @@ Run these on the system you will be connecting from, obviously.
    #+END_EXAMPLE
 4. ~screen /dev/tty.usbserial-0001 1500000,cs8,-ixon~
 * WiFi
-Turn on wifi manually: ~sudo nmcli d wifi connect Fitzgerald password
-***~. Configure WiFi by creating file /etc/network/interfaces.d/wlan0:
+Turn on wifi manually: ~sudo nmcli d wifi connect <SSID> password
+<SSID password>~. Configure WiFi by creating file
+/etc/network/interfaces.d/wlan0:
 #+BEGIN_EXAMPLE
 auto wlan0
 iface wlan0 inet dhcp
@@ -157,4 +158,4 @@ To shut them down, replace /up --detach/ with /down/.
    #+BEGIN_EXAMPLE
    18c99540-161d-4396-a54d-9824a659024d /mnt/18c99540-161d-4396-a54d-9824a659024d fuse.s3fs noauto,rw,allow_other,umask=0007,uid=1001,gid=1001,endpoint=us-west-2,url=https://s3-us-west-2.amazonaws.com,profile=backup 0 2
    #+END_EXAMPLE
-8. Run [[file:bin/backup.sh][bin/backup.sh]] from a cron job ([[file:bin/crontab][example crontab]]).
+8. Run [[file:bin/backup.sh][~bin/backup.sh~]] from a cron job ([[file:bin/crontab][example crontab]]).
